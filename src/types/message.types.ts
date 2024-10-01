@@ -1,6 +1,6 @@
 export interface ITransferMessage {
   transactionId: string;
-  id: number;
+  id: string;
   url: string;
   key: string;
 }
