@@ -6,23 +6,26 @@ import { saveDocToDB } from '../helpers/saveDocToDB';
 import { getTransactionDoc } from '../helpers/getTransactionDoc';
 import { confirmTransfer } from '../helpers/confirmTransfer';
 
-export const transferProcessor = async (rawMessage: amqplib.ConsumeMessage): Promise<{ success: Boolean }> => {
-  const message = JSON.parse(rawMessage.content.toString()) as ITransferMessage;
-  const key = `${Date.now()}-${message.key.trim().replaceAll(' ', '+')}`;
+export const transferProcessor = async (message: ITransferMessage): Promise<{ success: Boolean }> => {
+  console.log('Document transfered!', message);
+  return { success: true };
 
-  const { success: uploadSuccess } = await uploadFileToS3(message.id, message.url, key);
-  const { success: saveDocSuccess } = await saveDocToDB(message.id, message.key, key);
+  // TODO: Remove comments
+  // const key = `${Date.now()}-${message.key.trim().replaceAll(' ', '+')}`;
 
-  if (uploadSuccess == false || saveDocSuccess == false) {
-    await updateTransferTransaction('error', message.transactionId, message.key);
-    return { success: false };
-  }
+  // const { success: uploadSuccess } = await uploadFileToS3(message.id, message.url, key);
+  // const { success: saveDocSuccess } = await saveDocToDB(message.id, message.key, key);
 
-  const { success: updateDocSuccess } = await updateTransferTransaction('success', message.transactionId, message.key);
-  const { success: getDocSuccess, doc } = await getTransactionDoc(message.transactionId);
+  // if (uploadSuccess == false || saveDocSuccess == false) {
+  //   await updateTransferTransaction('error', message.transactionId, message.key);
+  //   return { success: false };
+  // }
 
-  const isTransferCompleted = Object.entries(doc.documents).every(([_key, value]) => value.state === 'success');
-  if (isTransferCompleted) await confirmTransfer(message.id, doc.confirmationURL);
+  // const { success: updateDocSuccess } = await updateTransferTransaction('success', message.transactionId, message.key);
+  // const { success: getDocSuccess, doc } = await getTransactionDoc(message.transactionId);
 
-  return { success: updateDocSuccess === true && getDocSuccess === true };
+  // const isTransferCompleted = Object.entries(doc.documents).every(([_key, value]) => value.state === 'success');
+  // if (isTransferCompleted) await confirmTransfer(message.id, doc.confirmationURL);
+
+  // return { success: updateDocSuccess === true && getDocSuccess === true };
 };
