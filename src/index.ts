@@ -15,7 +15,7 @@ if (!WORKER_TYPE) {
 let worker: Worker;
 
 switch (WORKER_TYPE) {
-  case 'document':
+  case 'documents':
     worker = new Worker({
       exchange: "receive_transfer_exchange",
       dlx: 'receive_transfer_dlx',
