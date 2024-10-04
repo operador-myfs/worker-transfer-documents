@@ -10,6 +10,6 @@ COPY . .
 
 RUN npm run build
 
-ENV WORKER_TYPE=transfer_documents
+ENV WORKER_TYPE=document
 
 CMD ["node", "dist/index.js"]

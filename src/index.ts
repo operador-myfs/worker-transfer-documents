@@ -15,7 +15,7 @@ if (!WORKER_TYPE) {
 let worker: Worker;
 
 switch (WORKER_TYPE) {
-  case 'transfer_documents':
+  case 'document':
     worker = new Worker({
       exchange: "receive_transfer_exchange",
       dlx: 'receive_transfer_dlx',
@@ -28,7 +28,7 @@ switch (WORKER_TYPE) {
       maxRetries: 5,
     });
     break;
-  case 'transfer_user':
+  case 'user':
     worker = new Worker({
       exchange: "receive_transfer_exchange",
       dlx: 'receive_transfer_dlx',
@@ -42,7 +42,7 @@ switch (WORKER_TYPE) {
     });
     break;
   default:
-    console.error(`WORKER_TYPE desconocido: ${WORKER_TYPE}. Esperado "documents" o "user".`);
+    console.error(`WORKER_TYPE desconocido: ${WORKER_TYPE}.`);
     process.exit(1);
 }
 
