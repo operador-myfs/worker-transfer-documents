@@ -1,12 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 import amqplib from 'amqplib';
-import { ITransferMessage } from './types/message.types';
-import { uploadFileToS3 } from './helpers/uploadFileToS3';
-import { saveDocToDB } from './helpers/saveDocToDB';
-import { updateTransferTransaction } from './helpers/updateTransferTransaction';
-import { getTransactionDoc } from './helpers/getTransactionDoc';
-import { confirmTransfer } from './helpers/confirmTransfer';
+import { transferProcessor } from './processors/transferProcessor';
 
 const amqpUrl = process.env.AMQP_URL || 'amqp://localhost:5672';
 
@@ -21,23 +16,8 @@ const amqpUrl = process.env.AMQP_URL || 'amqp://localhost:5672';
 
     channel.prefetch(1);
     channel.consume(queue, async rawMessage => {
-      const message = JSON.parse(rawMessage.content.toString()) as ITransferMessage;
-      const key = `${Date.now()}-${message.key.trim().replaceAll(' ', '+')}`;
-
-      const { success: success1 } = await uploadFileToS3(message.id, message.url, key);
-      const { success: success2 } = await saveDocToDB(message.id, message.key, key);
-
-      if (success1 == false || success2 == false) {
-        await updateTransferTransaction('error', message.transactionId, message.key);
-      }
-
-      const { success: success3 } = await updateTransferTransaction('success', message.transactionId, message.key);
-      const { success: success4, doc } = await getTransactionDoc(message.transactionId);
-
-      const isTransferCompleted = Object.entries(doc.documents).every(([_key, value]) => value.state === 'success');
-      if (isTransferCompleted) await confirmTransfer(doc.confirmationURL);
-
-      if (success3 === true && success4 === true) channel.ack(rawMessage);
+      const { success } = await transferProcessor(rawMessage);
+      if (success) channel.ack(rawMessage);
     });
   } catch (error) {
     console.log(error);

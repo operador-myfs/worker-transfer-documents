@@ -3,7 +3,7 @@ import { s3 } from '../config';
 import { AWS_BUCKET } from '../utils/constants';
 import axios from 'axios';
 
-export const uploadFileToS3 = async (uid: string, url: string, key: string): Promise<{ success: boolean }> => {
+export const uploadFileToS3 = async (uid: number, url: string, key: string): Promise<{ success: boolean }> => {
   try {
     const response = await axios({
       method: 'get',
