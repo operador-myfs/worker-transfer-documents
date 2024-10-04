@@ -6,8 +6,8 @@ import { saveDocToDB } from '../helpers/saveDocToDB';
 import { getTransactionDoc } from '../helpers/getTransactionDoc';
 import { confirmTransfer } from '../helpers/confirmTransfer';
 
-export const transferProcessor = async (message: ITransferMessage): Promise<{ success: Boolean }> => {
-  console.log('Document transfered!', message);
+export const transferUserProcessor = async (message: ITransferMessage): Promise<{ success: Boolean }> => {
+  console.log('User transfered!', message);
   return { success: true };
 
   // TODO: Remove comments
