@@ -25,6 +25,10 @@ admin.initializeApp({
   }),
 });
 
+export const rabbitMQConfig = {
+  amqpUrl: process.env.AMQP_URL || 'amqp://localhost:5672',
+};
+
 const db = admin.firestore();
 
 export { s3, db };
