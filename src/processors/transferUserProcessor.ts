@@ -6,7 +6,7 @@ import axios from 'axios';
 
 const amqpUrl = process.env.AMQP_URL || 'amqp://localhost:5672';
 const exchange = rabbitMQConfig.transferExchange;
-const userMicroserviceUrl = process.env.USER_MICROSERVICE_HOST || 'https://your-user-microservice-url.com';
+const userMicroserviceUrl = process.env.USER_MICROSERVICE_HOST || 'your-user-microservice-url.com';
 
 export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ success: Boolean }> => {
   try {
