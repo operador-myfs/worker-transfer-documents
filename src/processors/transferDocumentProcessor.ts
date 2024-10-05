@@ -1,4 +1,3 @@
-import amqplib from 'amqplib';
 import { updateTransferTransaction } from '../helpers/updateTransferTransaction';
 import { uploadFileToS3 } from '../helpers/uploadFileToS3';
 import { ITransferMessage } from '../types/message.types';
@@ -14,7 +13,7 @@ export const transferDocumentProcessor = async (message: ITransferMessage): Prom
 
   if (uploadSuccess == false || saveDocSuccess == false) {
     await updateTransferTransaction('error', message.transactionId, message.key);
-    return { success: false };
+    throw new Error('Error uploading file to S3 or saving document to DB');
   }
 
   const { success: updateDocSuccess } = await updateTransferTransaction('success', message.transactionId, message.key);
@@ -23,5 +22,8 @@ export const transferDocumentProcessor = async (message: ITransferMessage): Prom
   const isTransferCompleted = Object.entries(doc.documents).every(([_key, value]) => value.state === 'success');
   if (isTransferCompleted) await confirmTransfer(message.id, doc.confirmationURL);
 
-  return { success: updateDocSuccess === true && getDocSuccess === true };
+  if (updateDocSuccess === false || getDocSuccess === false) {
+    throw new Error('Error updating document or getting document from DB');
+  }
+  return { success: true };
 };
