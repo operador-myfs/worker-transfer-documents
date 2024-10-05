@@ -10,13 +10,13 @@ const userMicroserviceUrl = process.env.USER_MICROSERVICE_HOST || 'https://your-
 
 export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ success: Boolean }> => {
   try {
-    const response = await axios.post(`${userMicroserviceUrl}/api/v1/users/create`, {
+    await axios.post(`${userMicroserviceUrl}/api/v1/users/create`, {
       name: mes.citizenName,
       username: mes.citizenEmail,
       email: mes.citizenEmail,
     }, {
       headers: {
-        'Content-Type': 'application/json', // Si necesitas autenticación, agrega el token aquí
+        'Content-Type': 'application/json',
       },
     });
 
