@@ -2,15 +2,32 @@ import { createTransferTransaction } from '../helpers/createTransferTransaction'
 import { rabbitMQConfig } from '../config';
 import { TTransferCitizen } from '../types/transfer.types';
 import amqplib from 'amqplib';
+import axios from 'axios';
 
 const amqpUrl = process.env.AMQP_URL || 'amqp://localhost:5672';
 const exchange = rabbitMQConfig.transferExchange;
+const userMicroserviceUrl = process.env.USER_MICROSERVICE_HOST || 'https://your-user-microservice-url.com';
 
 export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ success: Boolean }> => {
-  // Hacer logica de guardar usuario
-  publishTransferDocuments(mes);
-  console.log('User transfered!', mes);
-  return { success: true };
+  try {
+    const response = await axios.post(`${userMicroserviceUrl}/api/v1/users/create`, {
+      name: mes.citizenName,
+      username: mes.citizenEmail,
+      email: mes.citizenEmail,
+    }, {
+      headers: {
+        'Content-Type': 'application/json', // Si necesitas autenticación, agrega el token aquí
+      },
+    });
+
+    await publishTransferDocuments(mes);
+
+    console.log('User transferred!', mes);
+    return { success: true };
+  } catch (error) {
+    console.error('Error transferring user:', error);
+    throw new Error(`Failed to transfer user: ${error.message}`);
+  }
 };
 
 export const publishTransferDocuments = async (mes: TTransferCitizen): Promise<void> => {
