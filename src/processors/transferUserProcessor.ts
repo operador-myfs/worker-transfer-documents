@@ -14,6 +14,8 @@ export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ su
       name: mes.citizenName,
       username: mes.citizenEmail,
       email: mes.citizenEmail,
+      cedula: mes.id,
+      address: "Not migrated address"
     }, {
       headers: {
         'Content-Type': 'application/json',
@@ -25,7 +27,7 @@ export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ su
     console.log('User transferred!', mes);
     return { success: true };
   } catch (error) {
-    console.error('Error transferring user:', error);
+    console.error('Error transferring user');
     throw new Error(`Failed to transfer user: ${error.message}`);
   }
 };

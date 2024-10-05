@@ -1,7 +1,7 @@
 import { updateEnvironmentVariables } from './secrets';
 
-// Ejecuta la actualización de variables de entorno
-updateEnvironmentVariables().catch(console.error);
+// // Ejecuta la actualización de variables de entorno
+// updateEnvironmentVariables().catch(console.error);
 
 //COLLECTIONS NAMES
 export const DOCUMENTS_COLLECTION = 'documents';
