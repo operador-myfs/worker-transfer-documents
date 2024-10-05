@@ -14,3 +14,11 @@ export interface ITransferTransaction {
   createdAt: number;
   updatedAt: number;
 }
+
+export interface TTransferCitizen  {
+  id: number,
+  citizenName: string,
+  citizenEmail: string,
+  Documents: Record<string, Array<string>>,
+  confirmationURL: string,
+};

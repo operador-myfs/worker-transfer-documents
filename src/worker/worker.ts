@@ -3,7 +3,7 @@ import amqplib, { Channel, Connection, ConsumeMessage } from 'amqplib';
 import { rabbitMQConfig } from '../config';
 import { ITransferMessage } from '../types/message.types';
 
-type ProcessorFunction = (message: ITransferMessage) => Promise<any>;
+type ProcessorFunction = (message: any) => Promise<any>;
 
 interface WorkerOptions {
   exchange: string;
@@ -120,7 +120,7 @@ export class Worker {
 
     try {
       const messageContent: string = msg.content.toString();
-      const message: ITransferMessage = JSON.parse(messageContent);
+      const message: any = JSON.parse(messageContent);
 
       const result = await this.options.processor(message);
 

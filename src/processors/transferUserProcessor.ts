@@ -1,25 +1,50 @@
-import { ITransferMessage } from '../types/message.types';
+import { createTransferTransaction } from '../helpers/createTransferTransaction';
+import { rabbitMQConfig } from '../config';
+import { TTransferCitizen } from '../types/transfer.types';
+import amqplib from 'amqplib';
 
-export const transferUserProcessor = async (message: ITransferMessage): Promise<{ success: Boolean }> => {
-  console.log('User transfered!', message);
+const amqpUrl = process.env.AMQP_URL || 'amqp://localhost:5672';
+const exchange = rabbitMQConfig.transferExchange;
+
+export const transferUserProcessor = async (mes: TTransferCitizen): Promise<{ success: Boolean }> => {
+  // Hacer logica de guardar usuario
+  publishTransferDocuments(mes);
+  console.log('User transfered!', mes);
   return { success: true };
+};
 
-  // TODO: Remove comments
-  // const key = `${Date.now()}-${message.key.trim().replaceAll(' ', '+')}`;
+export const publishTransferDocuments = async (mes: TTransferCitizen): Promise<void> => {
+  const { success, message, doc: docx } = await createTransferTransaction(mes);
+  if (!success) {
+    throw new Error(message);
+  }
+  
+  const connection = await amqplib.connect(amqpUrl, 'heartbeat=60');
+  const channel = await connection.createChannel();
 
-  // const { success: uploadSuccess } = await uploadFileToS3(message.id, message.url, key);
-  // const { success: saveDocSuccess } = await saveDocToDB(message.id, message.key, key);
+  try {
+    await channel.assertExchange(exchange, 'direct', { durable: true });
 
-  // if (uploadSuccess == false || saveDocSuccess == false) {
-  //   await updateTransferTransaction('error', message.transactionId, message.key);
-  //   return { success: false };
-  // }
-
-  // const { success: updateDocSuccess } = await updateTransferTransaction('success', message.transactionId, message.key);
-  // const { success: getDocSuccess, doc } = await getTransactionDoc(message.transactionId);
-
-  // const isTransferCompleted = Object.entries(doc.documents).every(([_key, value]) => value.state === 'success');
-  // if (isTransferCompleted) await confirmTransfer(message.id, doc.confirmationURL);
-
-  // return { success: updateDocSuccess === true && getDocSuccess === true };
+    for (const key in mes.Documents) {
+      if (Object.prototype.hasOwnProperty.call(mes.Documents, key)) {
+        const doc = mes.Documents[key];
+        const newMes = {
+          transactionId: docx.transactionId,
+          id: mes.id,
+          url: doc[0],
+          key,
+        };
+        const sent = channel.publish(exchange, rabbitMQConfig.routingKeys.transferDocuments, Buffer.from(JSON.stringify(newMes)),{ persistent: true });
+        if (!sent) {
+          console.warn(`Message for transaction ${docx.transactionId} could not be sent to exchange ${exchange}`);
+        }
+      }
+    }
+  } catch (error) {
+    console.log('Error when sending messages', error);
+    throw error;
+  } finally {
+    await channel.close();
+    await connection.close();
+  };
 };
